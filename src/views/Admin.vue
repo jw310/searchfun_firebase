@@ -1,0 +1,778 @@
+<template>
+  <div class="admin mt-4">
+    <!-- Loading 效果-->
+    <loading :active.sync="isLoading">
+      <template slot="before">Please wait</template>
+      <template slot="after">loading</template>
+      <!-- <Loading1 /> -->
+    </loading>
+
+    <Hamburger />
+
+    <div class="menu d-flex ml-2">
+      <div class="form-group d-flex">
+        <label for="cityName" class="mr-2 col-form-label text-right">縣市</label>
+        <div class="flex-fill">
+          <select id="cityName" class="form-control" v-model="select.city" @change="citySearch()">
+            <option value>-- Select One --</option>
+            <option v-for="c in cityName" :value="c.CityName" :key="c.CityName">{{ c.CityName }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group d-flex ml-1">
+        <label for="area" class="mr-2 col-form-label text-right">店名</label>
+        <div class="flex-fill">
+          <div class="input-group">
+            <input
+              class="form-control"
+              type="text"
+              v-model="searchText"
+              placeholder="Search"
+              aria-label="Search"
+              @input="search()"
+            />
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-open-place" @click="openModal(true)">建立新地點</button>
+      <button class="btn btn-primary signout" @click.prevent="signout">登出</button>
+    </div>
+    <!--all-->
+    <table v-if=" searchText === '' && select.city ===''" class="table mt-2">
+      <thead>
+        <tr>
+          <th width="80">類別</th>
+          <th width="80">城市</th>
+          <th width="80">地區</th>
+          <th width="120">店名</th>
+          <th width="100">推薦食物</th>
+          <th width="80">編輯</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!--key 會產生警告(有 eslint 的話)，因為此時沒有資料，但不影響使用-->
+        <tr v-for="(item) in data" :key="item._id">
+          <td>{{item.category}}</td>
+          <td>{{item.county}}</td>
+          <td>{{item.town }}</td>
+          <td>{{item.name}}</td>
+          <td>{{item.recommended}}</td>
+          <td>
+            <div style="display: inline-block;width: 100px;">
+              <button class="btn btn-outline-primary btn-sm" @click="openModal(false, item)">編輯</button>
+              <button class="btn btn-outline-primary btn-sm" @click="delModal(item)">刪除</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!--city-->
+    <table v-if="select.city !== '' && searchText === ''" class="table mt-2">
+      <thead>
+        <tr>
+          <th width="80">類別</th>
+          <th width="80">城市</th>
+          <th width="80">地區</th>
+          <th width="120">店名</th>
+          <th width="100">推薦食物</th>
+          <th width="80">編輯</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item) in data" :key="item._id">
+          <td>{{item.category}}</td>
+          <td>{{item.county}}</td>
+          <td>{{item.town }}</td>
+          <td>{{item.name}}</td>
+          <td>{{item.recommended}}</td>
+          <td>
+            <div style="display: inline-block;width: 100px;">
+              <button class="btn btn-outline-primary btn-sm" @click="openModal(false, item)">編輯</button>
+              <button class="btn btn-outline-primary btn-sm" @click="delModal(item)">刪除</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!--restraut-->
+    <table v-if=" searchText != ''" class="table mt-2">
+      <thead>
+        <tr>
+          <th width="80">類別</th>
+          <th width="80">城市</th>
+          <th width="80">地區</th>
+          <th width="120">店名</th>
+          <th width="100">推薦食物</th>
+          <th width="80">編輯</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!--key 會產生警告(有 eslint 的話)，因為此時沒有資料，但不影響使用-->
+        <tr v-for="(item) in filterData" :key="item._id">
+          <td>{{item.category}}</td>
+          <td>{{item.county}}</td>
+          <td>{{item.town }}</td>
+          <td>{{item.name}}</td>
+          <td>{{item.recommended}}</td>
+          <td>
+            <div style="display: inline-block;width: 100px;">
+              <button class="btn btn-outline-primary btn-sm" @click="openModal(false, item)">編輯</button>
+              <button class="btn btn-outline-primary btn-sm" @click="delModal(item)">刪除</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 新增 Modal -->
+    <div
+      class="modal fade"
+      id="locationModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title" id="exampleModalLabel">
+              <span>新增地點</span>
+            </h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- <div class="row">
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <label for="county">county</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="county"
+                    v-model="tempLocation.county"
+                    placeholder="請輸入"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="town">town</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="town"
+                    v-model="tempLocation.town"
+                    placeholder="請輸入"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="image">輸入圖片網址</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="image"
+                    v-model="tempLocation.imageUrl"
+                    placeholder="請輸入圖片連結"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="customFile">
+                    或 上傳圖片
+                    <i class="fas fa-spinner fa-spin" v-if="status.fileUploading"></i>
+                  </label>
+                  <input
+                    type="file"
+                    id="customFile"
+                    class="form-control"
+                    ref="files"
+                    @change="uploadFile"
+                  />
+                </div>
+                <img class="img-fluid" :src="tempLocation.imageUrl" alt />
+              </div>
+
+              <div class="col-sm-8">
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="county">county</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="county"
+                      v-model="tempLocation.county"
+                      placeholder="請輸入"
+                    />
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="town">town</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="town"
+                      v-model="tempLocation.town"
+                      placeholder="請輸入"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="category">category</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="category"
+                      v-model="tempLocation.category"
+                      placeholder="請輸入"
+                    />
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="name">name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      v-model="tempLocation.name"
+                      placeholder="請輸入"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="phone">phone</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="phone"
+                      v-model="tempLocation.phone"
+                      placeholder="請輸入"
+                    />
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="price">Recommended</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="Recommended"
+                      v-model="tempLocation.Recommended"
+                      placeholder="請輸入"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="phone">cost</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="cost"
+                      v-model="tempLocation.cost"
+                      placeholder="請輸入"
+                    />
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="price">score</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="score"
+                      v-model="tempLocation.score"
+                      placeholder="請輸入"
+                    />
+                  </div>
+                </div>
+                <hr />
+                <div class="form-group">
+                  <label for="description">address</label>
+                  <textarea
+                    type="text"
+                    class="form-control"
+                    id="address"
+                    v-model="tempLocation.address"
+                    placeholder="請輸入產品描述"
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="content">note</label>
+                  <textarea
+                    type="text"
+                    class="form-control"
+                    id="note"
+                    v-model="tempLocation.note"
+                    placeholder="請輸入"
+                  ></textarea>
+                </div>
+              </div>
+            </div>-->
+            <div class="row">
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <label for="county">county</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="county"
+                    v-model="tempLocation.county"
+                    placeholder="請輸入"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="food">food</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="food"
+                    v-model="tempLocation.food"
+                    placeholder="請輸入"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="Recommended">Recommended</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="recommended"
+                    v-model="tempLocation.recommended"
+                    placeholder="請輸入"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="url">url</label>
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="url"
+                    v-model="tempLocation.url"
+                    placeholder="請輸入"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <label for="town">town</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="town"
+                    v-model="tempLocation.town"
+                    placeholder="請輸入"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="name">name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    v-model="tempLocation.name"
+                    placeholder="請輸入"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="cost">cost</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="cost"
+                    v-model="tempLocation.cost"
+                    placeholder="請輸入"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="latitude">緯度</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="latitude"
+                    v-model="tempLocation.geometry.coordinates[1]"
+                    placeholder="請輸入"
+                  />
+                </div>
+              </div>
+
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <label for="category">category</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="category"
+                    v-model="tempLocation.category"
+                    placeholder="請輸入"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="phone">phone</label>
+                  <input
+                    type="tel"
+                    class="form-control"
+                    id="phone"
+                    v-model="tempLocation.phone"
+                    placeholder="請輸入"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="score">score</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    class="form-control"
+                    id="score"
+                    v-model="tempLocation.score"
+                    placeholder="請輸入"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="longitude">經度</label>
+                  <input
+                    type="number"
+                    step="0.0000001"
+                    class="form-control"
+                    id="longitude"
+                    v-model="tempLocation.geometry.coordinates[0]"
+                    placeholder="請輸入"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <div class="form-group">
+                  <label for="address">address</label>
+                  <textarea
+                    type="text"
+                    class="form-control"
+                    id="address"
+                    v-model="tempLocation.address"
+                    placeholder="請輸入"
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="business_hours">business_hours</label>
+                  <textarea
+                    type="text"
+                    class="form-control"
+                    id="business_hours"
+                    v-model="tempLocation.business_hours"
+                    placeholder="請輸入"
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="description">description</label>
+                  <textarea
+                    type="text"
+                    class="form-control"
+                    id="description"
+                    v-model="tempLocation.description"
+                    placeholder="請輸入"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" @click="updateLocation">確認</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 刪除 Modal -->
+    <div
+      class="modal fade"
+      id="delLocationModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content border-0">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="exampleModalLabel">
+              <span>刪除地點</span>
+            </h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            是否刪除
+            <strong class="text-danger">{{ deleteName }}</strong> 地點(刪除後將無法恢復)。
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-danger" @click="deleteLocation">確認刪除</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- citysearch-->
+    <Pagination
+      v-if="searchText === '' && select.city !== ''"
+      :pageNum="pagination"
+      @getPage="citySearch"
+    ></Pagination>
+
+    <!--all -->
+    <Pagination
+      v-if="searchText === '' && select.city === ''"
+      :pageNum="pagination"
+      @getPage="getLocation"
+    ></Pagination>
+  </div>
+</template>
+
+<script>
+import $ from 'jquery'
+// 載入 Pagination
+import Pagination from '../components/Pagination'
+import Hamburger from '@/components/Hamburger'
+import cityName from '../assets/CityCountyData.json'
+
+export default {
+  // 使用 Pagination
+  components: {
+    Pagination,
+    Hamburger
+  },
+  // 箭頭函式進階語法  () => ({})  回傳字面值(回傳值)
+  data: () => ({
+    allData: [],
+    data: [],
+    filterData: [],
+    cityFilterData: [],
+    searchText: '',
+    cityName,
+    select: {
+      city: '',
+      area: '',
+      category: ''
+    },
+    allPagination: {},
+    pagination: {},
+    tempLocation: {
+      geometry: {
+        type: 'Point',
+        coordinates: {}
+      }
+    }, // modal 資料
+    isNew: false,
+    deleteId: '',
+    deleteName: '',
+    updateId: '',
+    status: {
+      fileUploading: false
+    },
+    isLoading: false
+  }),
+  methods: {
+    getAllLocation() {
+      const api = `${process.env.VUE_APP_APIPATH}/restaurants`
+      this.isLoading = true
+      this.$http.get(api).then(Response => {
+        //   console.log(Response)
+        this.allData = Response.data.data
+        // console.log(this.data)
+        this.isLoading = false
+      })
+    },
+    getLocation(page = 1) {
+      // 用 axios 非同步取得資料
+      const api = `${process.env.VUE_APP_APIPATH}/restaurants/page?page=${page}`
+      this.$http.get(api).then(Response => {
+        // console.log(Response.data)
+        this.data = Response.data.data
+        this.pagination = Response.data.pagination
+        // console.log(this.data, this.pagination)
+      })
+    },
+    openModal(isNew, item) {
+      $('#locationModal').modal('show')
+      // 如果是全新資料先加入 geometry 資料
+      if (isNew) {
+        this.tempLocation = {
+          geometry: {
+            type: 'Point',
+            coordinates: []
+          }
+        }
+        this.isNew = true
+      } else {
+        // 如果直接 this.tempLocation = item，會有傳參考的特性，用 ES6 方法 Object.assign()
+        this.tempLocation = Object.assign({}, item)
+        // console.log(this.tempLocation)
+        this.updateId = this.tempLocation._id
+        this.isNew = false
+      }
+      $('#locationModal').modal('show')
+    },
+    updateLocation() {
+      // updata API
+      let api = `${process.env.VUE_APP_APIPATH}/restaurants`
+      let httpMethod = 'post'
+      const vm = this
+      if (!vm.isNew) {
+        // 取得要修改的資料
+        api = `${process.env.VUE_APP_APIPATH}/restaurants/${vm.updateId}`
+        httpMethod = 'put'
+        // 刪除要傳送 tempLocation._id 屬性，因更新時，若帶有id 。mongodb 會發生錯誤
+        delete this.tempLocation._id
+        // console.log(api)
+      }
+      // 將 score、cost 欄位轉成數字型別 parseFloat 加上小數點
+      vm.tempLocation.score = parseFloat(vm.tempLocation.score)
+      vm.tempLocation.cost = parseInt(vm.tempLocation.cost)
+      // console.log(vm.tempLocation)
+      // vm.tempLocation 物件傳入，接收資料的型態要是物件
+      this.$http[httpMethod](api, vm.tempLocation).then(response => {
+        // console.log(response.data)
+        if (response.data.success) {
+          // 成功地關閉 modal
+          $('#locationModal').modal('hide')
+          vm.getLocation()
+        } else {
+          $('#locationModal').modal('hide')
+          vm.getLocation()
+        }
+      })
+    },
+    delModal(item) {
+      $('#delLocationModal').modal('show')
+      // 取得點選的 item.id
+      this.deleteId = item._id
+      this.deleteName = item.name
+      // console.log(item._id)
+    },
+    deleteLocation() {
+      const vm = this
+      const api = `${process.env.VUE_APP_APIPATH}/restaurants/${vm.deleteId}`
+      this.$http.delete(api).then(response => {
+        // console.log(response.data)
+        if (response.data.success) {
+          $('#delLocationModal').modal('hide') // 成功地關閉 modal
+          console.log('刪除成功')
+          vm.getLocation()
+        } else {
+          $('#delLocationModal').modal('hide') // 成功地關閉 modal
+          vm.getLocation()
+        }
+      })
+    },
+    uploadFile() {
+      // 上傳圖片
+      // console.log(this);
+      const uploadedFile = this.$refs.files.files[0]
+      const vm = this
+      const formData = new FormData() //  表單送出方法，建立物件
+      formData.append('file-to-upload', uploadedFile) // 新增欄位
+      const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/admin/upload`
+      vm.status.fileUploading = true
+      this.$http
+        .post(url, formData, {
+          headers: {
+            'content-Type': 'multipart/form-data' // 改上傳格式為 form-data
+          }
+        })
+        .then(response => {
+          console.log(response.data)
+          vm.status.fileUploading = false
+          if (response.data.success) {
+            // vm.tempProduct.imageUrl = response.data.imageUrl; // 此時資訊並沒有完整寫入
+            // console.log(vm.tempProduct.imageUrl);
+            vm.$set(vm.tempProduct, 'imageUrl', response.data.imageUrl) // 雙向綁定，強制寫入資訊
+          } else {
+            // this.$bus.$emit("message:push", response.data.message, "danger"); // 內層觸發
+          }
+        })
+    },
+    signout() {
+      const api = `${process.env.VUE_APP_APIPATH}/user/logout`
+      const vm = this
+      this.$http.get(api).then(response => {
+        console.log(response.data)
+        if (response.data.success) {
+          vm.$router.push('/login') // 登入回到首頁
+        }
+      })
+    },
+    citySearch(page = 1) {
+      const api = `${process.env.VUE_APP_APIPATH}/restaurants/page?page=${page}&&city=${this.select.city}`
+      this.$http.get(api).then(Response => {
+        console.log(Response.data)
+        this.data = Response.data.data
+        this.pagination = Response.data.pagination
+        // console.log(this.data, this.pagination)
+      })
+    },
+    search() {
+      if (this.searchText) {
+        const filter = this.allData.filter(
+          item => item.name === this.searchText
+        )
+        // console.log(filter)
+        this.filterData = filter
+      }
+    }
+  },
+  mounted() {
+    this.getAllLocation()
+    this.getLocation()
+  }
+}
+</script>
+
+<style scoped lang="scss">
+.menu {
+  @media (max-width: 575.98px) {
+    display: flex;
+    flex-direction: column;
+    .btn {
+      position: relative;
+      margin: 10px;
+    }
+    .btn-open-place {
+      display: none;
+    }
+  }
+}
+
+.table {
+  overflow: overflow-y;
+}
+
+.btn-open-place {
+  position: absolute;
+  right: 130px;
+}
+
+.signout {
+  position: absolute;
+  right: 20px;
+}
+
+.pagination {
+  display: flex;
+  margin: 20px 30px;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+</style>

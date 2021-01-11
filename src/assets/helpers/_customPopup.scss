@@ -1,0 +1,95 @@
+
+
+$base-font-size: 16px !default;
+@function rem($target, $context: $base-font-size){
+  @if $target == 0 { @return 0 }
+    @return ($target / $context) + 0rem;
+}
+
+.customPopup {
+  font-family: "Hiragino Sans CNS", "微軟正黑體", "Arial";
+  width: rem(300px);
+  &__title {
+    font-size: rem(18px);
+    font-weight: bold;
+    line-height: rem(27px);
+  }
+  &__addr,
+  &__note {
+    font-size: rem(14px);
+    line-height: 1.5;
+    color: #828282;
+  }
+
+  &__phone {
+    margin-top: rem(8px);
+    font-size: rem(14px);
+    line-height: 1.5;
+    color: #828282;
+  }
+
+  &__child,
+  &__adult {
+    font-size: rem(24px);
+    font-weight: bold;
+    color: #4f4f4f;
+    img {
+      height: rem(30px);
+    }
+    p {
+      text-align: center;
+      line-height: 1;
+      margin: 0;
+    }
+  }
+  &__tel {
+    display: block;
+    margin: rem(8px) 0;
+    line-height: 0;
+    padding: rem(6px) 0;
+    text-align: center;
+    border: 1px solid #f2c94c;
+    box-sizing: border-box;
+    border-radius: rem(20px);
+  }
+  &__updated {
+    clear: both;
+    margin-top: rem(8px);
+    font-size: rem(12px);
+    line-height: 1.5;
+    color: #828282;
+    text-align: right;
+  }
+  &__google {
+    clear: both;
+    display: block;
+    margin-top: rem(8px);
+    padding: rem(6px) 0;
+    font-size: rem(20px);
+    font-weight: bold;
+    text-align: center;
+    color: #fff !important;
+    text-decoration: none !important;
+    border-radius: rem(20px);
+    background: #f2c94c;
+    img {
+      position: relative;
+      top: rem(2px);
+      margin-right: rem(8px);
+    }
+  }
+  &__block {
+    &-left {
+      float: left;
+      width: 55%;
+    }
+    &-right {
+      float: right;
+      width: 45%;
+    }
+    &-flex {
+      display: flex;
+      justify-content: space-around;
+    }
+  }
+}

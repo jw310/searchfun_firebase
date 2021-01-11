@@ -1,0 +1,23 @@
+// @import "~bootstrap/scss/functions";  
+// @import "./helpers/_variables";        // 載入自定義變數
+// @import "~bootstrap/scss/bootstrap"; // 載入 node_modules 下的 bootstrap/scss/bootstrap
+// @import "./helpers/_customPopup"
+@import 'bootstrap/scss/bootstrap';
+@import "./helpers/_map";
+@import "./helpers/_scrollTop";
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100vh;
+  font-family: "Microsoft JhengHei", "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
