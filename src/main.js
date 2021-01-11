@@ -12,6 +12,9 @@ import "leaflet/dist/leaflet.css"
 import "leaflet.markercluster/dist/MarkerCluster.css"
 import "leaflet.markercluster/dist/MarkerCluster.Default.css"
 import "leaflet.markercluster";
+// firebase 套件
+import { firestorePlugin } from 'vuefire'
+Vue.use(firestorePlugin)
 
 // Vue.component('v-marker-cluster', Vue2LeafletMarkerCluster);
 
@@ -26,6 +29,7 @@ import Loading2 from './components/Loading2';
 Vue.component('Loading', Loading)
 Vue.component('Loading1', Loading1)
 Vue.component('Loading2', Loading2)
+
 
 // 前端 axios 請求附帶 Cookies 設定
 axios.defaults.withCredentials = false
