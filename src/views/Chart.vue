@@ -16,6 +16,7 @@
 import chart from '../components/Chart.vue'
 import Hamburger from '@/components/Hamburger.vue'
 import cityName from '../assets/CityCountyData.json'
+import db from '@/firebase_connectDB.js'
 
 export default {
   components: {
@@ -105,16 +106,24 @@ export default {
   },
   methods: {
     getApiData() {
-      const api = `${process.env.VUE_APP_APIPATH}/restaurants`
-      this.isLoading = true
-      this.$http.get(api).then(Response => {
-        // console.log(Response)
-        this.data = Response.data.data
-        let temp = []
-        this.data.forEach(el => {
-          temp.push(el.county)
-        })
-        // console.log(temp)
+      const fStore = db.firestore()
+      fStore.collection('data').onSnapshot((res) => {
+      // console.log(res.docChanges())
+      const changes = res.docChanges()
+      let temp = []
+      changes.forEach((element) => {
+        if (element.type === 'added') {
+          // 取得資料欄位內容
+          // console.log(element.doc.data())
+          this.data.push({
+            ...element.doc.data(),
+            id: element.doc.id,
+          })
+        }
+      })
+      this.data.forEach((element) => {
+        temp.push(element.county)
+      })
         Array.from(temp)
         this.countNum(temp)
         this.getChartXY()

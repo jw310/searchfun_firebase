@@ -292,6 +292,7 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png'
 import cityName from '../assets/CityCountyData.json'
 import $ from 'jquery'
 //
+import db from '@/firebase_connectDB.js'
 import Hamburger from '@/components/Hamburger.vue'
 import star from '../components/Star.vue'
 
@@ -434,7 +435,7 @@ export default {
             推薦: ${pharmacy.recommended}<br> 人均: ${pharmacy.cost}<br>
             <small>營業時間: ${pharmacy.business_hours}</small><br>
             <a href="https://www.google.com/maps/dir/
-          ${this.location[0]},${this.location[1]}/ 
+          ${this.location[0]},${this.location[1]}/
           ${geometry.coordinates[1]},${geometry.coordinates[0]}"
           target="_blank"
         >
@@ -702,15 +703,34 @@ export default {
   // 取得 API 資料
   mounted() {
     this.getToday()
-    this.fetchTWGeo()
-    // 用 axios 非同步取得資料
-    const api = `${process.env.VUE_APP_APIPATH}/restaurants`
+    // this.fetchTWGeo()
     this.isLoading = true
-    this.$http.get(api).then(Response => {
-      // console.log(Response)
-      this.data = Response.data.data
-      // console.log(this.data)
-      // 找出類別集合
+    const fStore = db.firestore()
+    // 用 axios 非同步取得資料
+    // const api = `${process.env.VUE_APP_APIPATH}/restaurants`
+    // this.$http.get(api).then(Response => {
+    //   // console.log(Response)
+    //   this.data = Response.data.data
+    //   // console.log(this.data)
+    //   // 找出類別集合
+    //   this.getUnique()
+    //   this.markerCluster()
+    //   this.isLoading = false
+    // })
+    this.data = []
+    fStore.collection('data').onSnapshot((res) => {
+      // console.log(res.docChanges())
+      const changes = res.docChanges()
+      changes.forEach((element) => {
+        if (element.type === 'added') {
+          // 取得資料欄位內容
+          console.log(element.doc.data())
+          this.data.push({
+            ...element.doc.data(),
+            id: element.doc.id,
+          })
+        }
+      })
       this.getUnique()
       this.markerCluster()
       this.isLoading = false

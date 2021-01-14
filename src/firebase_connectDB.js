@@ -10,7 +10,7 @@ import 'firebase/firebase-auth'
 var firebaseConfig = {
     apiKey: process.env.FIREBASE_APIKEY,
     authDomain: 'searchfun-firebase.firebaseapp.com',
-    databaseURL: "https://todo-ccc5f.firebaseio.com",
+    databaseURL: "https://searchfun-firebase.firebaseio.com",
     projectId: 'searchfun-firebase',
     storageBucket: 'searchfun-firebase.appspot.com',
     messagingSenderId: '757039206758',
