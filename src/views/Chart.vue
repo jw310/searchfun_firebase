@@ -149,7 +149,7 @@ export default {
       let temp = arr.reduce((obj, item) => {
         // in 檢查物件內是否有指定屬性
         if (item in obj) {
-          // 若有此屬性，則值加 1
+          // 若有此屬性，則數量加 1
           obj[item]++
         } else {
           // 若無則新增 item 屬性並賦值 1
@@ -192,7 +192,7 @@ export default {
     //   })
     //   console.log(this.chartX)
     // },
-    // 刪除不要的地區資料
+    // 刪除重複的地區資料
     removeByValue(array, array2) {
       return array.forEach((item, index) => {
         array2.forEach(value => {

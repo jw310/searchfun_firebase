@@ -50,7 +50,7 @@ new Vue({
 
 /**
  * 導航守衛
- * 當router/index.js (route.js) 發現路由有加上 meta: { requiresAuth: true }
+ * 當router/index.js (route.js) 發現路由有加上參數 meta: { requiresAuth: true }
  * 代表需要經過導航守衛去做某些驗證
  *  */
 

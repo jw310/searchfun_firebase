@@ -3,8 +3,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <ul class="nav flex-column">
         <router-link to="/">
-          <i class="fas fa-search-location" aria-hidden="true"></i>
-          查詢頁面
+          <i class="fas fa-search-location" aria-hidden="true"></i>查詢頁面
         </router-link>
       </ul>
       <ul class="nav flex-column">
