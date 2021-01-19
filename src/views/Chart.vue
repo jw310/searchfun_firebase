@@ -16,7 +16,7 @@
 import chart from '../components/Chart.vue'
 import Hamburger from '@/components/Hamburger.vue'
 import cityName from '../assets/CityCountyData.json'
-import db from '@/firebase_connectDB.js'
+import firebaseDB from '@/firebase_connectDB.js'
 
 export default {
   components: {
@@ -106,7 +106,7 @@ export default {
   },
   methods: {
     getApiData() {
-      const fStore = db.firestore()
+      const fStore = firebaseDB.firestore()
       fStore.collection('data').onSnapshot((res) => {
       // console.log(res.docChanges())
       const changes = res.docChanges()

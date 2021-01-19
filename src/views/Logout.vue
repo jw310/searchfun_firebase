@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import firebaseDB from '@/firebase_connectDB.js'
+
 export default {
   name: 'Logout',
   data() {
@@ -13,18 +15,28 @@ export default {
     }
   },
   methods: {
+    // signout() {
+    //   //  對應 config 裡的 dev.env.js 的環境變數
+    //   const api = `${process.env.VUE_APP_APIPATH}/user/logout`
+    //   console.log(api)
+    //   // 申請apipath
+    //   const vm = this
+    //   this.$http.get(api).then(response => {
+    //     console.log(response.data)
+    //     if (response.data.success) {
+    //       vm.$router.push('/login') // 登入回到首頁
+    //     }
+    //   })
+    // }
     signout() {
-      //  對應 config 裡的 dev.env.js 的環境變數
-      const api = `${process.env.VUE_APP_APIPATH}/user/logout`
-      console.log(api)
-      // 申請apipath
-      const vm = this
-      this.$http.get(api).then(response => {
-        console.log(response.data)
-        if (response.data.success) {
-          vm.$router.push('/login') // 登入回到首頁
-        }
-      })
+      firebaseDB.auth()
+      .signOut()
+      .then(function() {
+        // 登出後強制重整一次頁面
+        window.location.reload();
+        }).catch(function(error) {
+        console.log(error.message)
+      });
     }
   }
 }

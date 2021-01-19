@@ -3,7 +3,7 @@
     <form class="form-signin" role="form" @submit.prevent="signup">
       <h2 class="form-signin-heading">註冊</h2>
 
-      <label for="username" class="sr-only">Username:</label>
+      <!-- <label for="username" class="sr-only">Username:</label>
       <input
         id="username"
         name="username"
@@ -12,7 +12,7 @@
         placeholder="帳號"
         v-model="user.username"
         required
-      />
+      /> -->
 
       <label for="email" class="sr-only">Email:</label>
       <input
@@ -53,12 +53,14 @@
 </template>
 
 <script>
+import firebaseDB from '@/firebase_connectDB.js'
+
 export default {
   name: 'signup',
   data() {
     return {
       user: {
-        username: '',
+        // username: '',
         email: '',
         password: '',
         repassword: ''
@@ -67,21 +69,17 @@ export default {
   },
   methods: {
     signup() {
-      console.log(this.user)
-      //  對應 config 裡的 dev.env.js 的環境變數
-      const api = `${process.env.VUE_APP_APIPATH}/user/signup`
-      // api 伺服器路徑
-      // 申請apipath
-      const vm = this
-      //console.log(process.env.APIPATH, process.env.CUSTOMPATH);
-      this.$http.post(api, vm.user).then(response => {
-        console.log(response.data)
-        if (response.data.success) {
-          vm.$router.push('/')
-        }
-      })
+      // console.log(firebaseDB)
+      firebaseDB.auth()
+      .createUserWithEmailAndPassword(this.user.email, this.user.password)
+      .then(result => {
+        // console.log(result)
+        this.$router.push('/')
+      }).catch(function(error) {
+        // console.log(error.message)
+      });
     }
-  }
+  },
 }
 </script>
 

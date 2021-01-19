@@ -542,11 +542,12 @@
 </template>
 
 <script>
-import $ from 'jquery'
+import jq from 'jquery'
 // 載入 Pagination
 import Pagination from '../components/Pagination'
 import Hamburger from '@/components/Hamburger'
 import cityName from '../assets/CityCountyData.json'
+import firebaseDB from '@/firebase_connectDB.js'
 
 export default {
   // 使用 Pagination
@@ -554,7 +555,7 @@ export default {
     Pagination,
     Hamburger
   },
-  // 箭頭函式進階語法  () => ({})  回傳字面值(回傳值)
+  // 箭頭函式進階語法 () => ({}) 回傳字面值(回傳值)
   data: () => ({
     allData: [],
     data: [],
@@ -586,13 +587,22 @@ export default {
   }),
   methods: {
     getAllLocation() {
-      const api = `${process.env.VUE_APP_APIPATH}/restaurants`
       this.isLoading = true
-      this.$http.get(api).then(Response => {
-        //   console.log(Response)
-        this.allData = Response.data.data
-        // console.log(this.data)
-        this.isLoading = false
+      const fStore = firebaseDB.firestore()
+      fStore.collection('data').onSnapshot((res) => {
+      // console.log(res.docChanges())
+      const changes = res.docChanges()
+      changes.forEach((element) => {
+          if (element.type === 'added') {
+            // 取得資料欄位內容
+            // console.log(element.doc.data())
+            this.data.push({
+              ...element.doc.data(),
+              id: element.doc.id,
+            })
+          }
+        })
+      this.isLoading = false
       })
     },
     getLocation(page = 1) {
@@ -606,8 +616,8 @@ export default {
       })
     },
     openModal(isNew, item) {
-      $('#locationModal').modal('show')
-      // 如果是全新資料先加入 geometry 資料
+      // jq('#locationModal').modal('show')
+      // 如果是全新資料先加入 geometry 欄位
       if (isNew) {
         this.tempLocation = {
           geometry: {
@@ -620,62 +630,53 @@ export default {
         // 如果直接 this.tempLocation = item，會有傳參考的特性，用 ES6 方法 Object.assign()
         this.tempLocation = Object.assign({}, item)
         // console.log(this.tempLocation)
-        this.updateId = this.tempLocation._id
+        this.updateId = this.tempLocation.id
         this.isNew = false
       }
-      $('#locationModal').modal('show')
+      jq('#locationModal').modal('show')
     },
-    updateLocation() {
-      // updata API
-      let api = `${process.env.VUE_APP_APIPATH}/restaurants`
-      let httpMethod = 'post'
-      const vm = this
-      if (!vm.isNew) {
-        // 取得要修改的資料
-        api = `${process.env.VUE_APP_APIPATH}/restaurants/${vm.updateId}`
-        httpMethod = 'put'
-        // 刪除要傳送 tempLocation._id 屬性，因更新時，若帶有id 。mongodb 會發生錯誤
-        delete this.tempLocation._id
-        // console.log(api)
+    async updateLocation() {
+      const fStore = firebaseDB.firestore()
+      if (!this.isNew) {
+        // 將 score、cost 欄位轉成數字型別 parseFloat 加上小數點
+        this.tempLocation.score = parseFloat(this.tempLocation.score)
+        this.tempLocation.cost = parseInt(this.tempLocation.cost)
+        await fStore.collection('data').doc(this.tempLocation.id).update(this.tempLocation)
+      } else {
+        this.tempLocation.score = parseFloat(this.tempLocation.score)
+        this.tempLocation.cost = parseInt(this.tempLocation.cost)
+        await fStore.collection('data').add(this.tempLocation)
       }
-      // 將 score、cost 欄位轉成數字型別 parseFloat 加上小數點
-      vm.tempLocation.score = parseFloat(vm.tempLocation.score)
-      vm.tempLocation.cost = parseInt(vm.tempLocation.cost)
-      // console.log(vm.tempLocation)
-      // vm.tempLocation 物件傳入，接收資料的型態要是物件
-      this.$http[httpMethod](api, vm.tempLocation).then(response => {
-        // console.log(response.data)
-        if (response.data.success) {
-          // 成功地關閉 modal
-          $('#locationModal').modal('hide')
-          vm.getLocation()
-        } else {
-          $('#locationModal').modal('hide')
-          vm.getLocation()
-        }
-      })
+      jq('#locationModal').modal('hide')
+      this.getLocation()
     },
     delModal(item) {
-      $('#delLocationModal').modal('show')
+      jq('#delLocationModal').modal('show')
       // 取得點選的 item.id
-      this.deleteId = item._id
+      this.deleteId = item.id
       this.deleteName = item.name
       // console.log(item._id)
     },
-    deleteLocation() {
-      const vm = this
-      const api = `${process.env.VUE_APP_APIPATH}/restaurants/${vm.deleteId}`
-      this.$http.delete(api).then(response => {
-        // console.log(response.data)
-        if (response.data.success) {
-          $('#delLocationModal').modal('hide') // 成功地關閉 modal
-          console.log('刪除成功')
-          vm.getLocation()
-        } else {
-          $('#delLocationModal').modal('hide') // 成功地關閉 modal
-          vm.getLocation()
-        }
-      })
+    async deleteLocation() {
+      this.isLoading = true
+      const fStore = firebaseDB.firestore()
+      try {
+        await fStore.collection('data').doc(this.deleteId).delete()
+        jq('#delLocationModal').modal('hide')
+        console.log('刪除成功')
+        this.getLocation()
+      } catch (error) {
+        console.log(error)
+        jq('#delLocationModal').modal('hide')
+        this.getLocation()
+      }
+      // // 用 findIndex 去找相同 id 的物件，若找到相同 id 回傳此 id
+      // let newindex = this.data.findIndex(function (item) {
+      //   return this.deleteId === item.id
+      // })
+      // // 刪除物件陣列裡相同 id 的事項
+      // this.data.splice(newindex, 1)
+      this.isLoading = false
     },
     uploadFile() {
       // 上傳圖片
@@ -705,14 +706,15 @@ export default {
         })
     },
     signout() {
-      const api = `${process.env.VUE_APP_APIPATH}/user/logout`
       const vm = this
-      this.$http.get(api).then(response => {
-        console.log(response.data)
-        if (response.data.success) {
-          vm.$router.push('/login') // 登入回到首頁
-        }
-      })
+      firebaseDB.auth()
+      .signOut()
+      .then(function() {
+          vm.$router.push('/login')
+          window.location.reload() // 登出後強制重整一次頁面
+        }).catch(function(error) {
+        console.log(error.message)
+      });
     },
     citySearch(page = 1) {
       const api = `${process.env.VUE_APP_APIPATH}/restaurants/page?page=${page}&&city=${this.select.city}`
@@ -725,8 +727,8 @@ export default {
     },
     search() {
       if (this.searchText) {
-        const filter = this.allData.filter(
-          item => item.name === this.searchText
+        const filter = this.data.filter(
+          item => item.name.includes(this.searchText)
         )
         // console.log(filter)
         this.filterData = filter

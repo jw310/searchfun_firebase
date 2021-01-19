@@ -8,19 +8,19 @@ import 'firebase/firebase-auth'
 
 // Your web app's Firebase configuration
 var firebaseConfig = {
-    apiKey: process.env.FIREBASE_APIKEY,
+    apiKey: process.env.VUE_APP_APIKEY,
     authDomain: 'searchfun-firebase.firebaseapp.com',
     databaseURL: "https://searchfun-firebase.firebaseio.com",
     projectId: 'searchfun-firebase',
     storageBucket: 'searchfun-firebase.appspot.com',
     messagingSenderId: '757039206758',
-    appId: process.env.FIREBASE_APPID,
+    appId: process.env.VUE_APP_APPID,
     measurementId: 'G-2RS3V5JP60'
 }
 // Initialize Firebase
 const firebaseApp = firebase.initializeApp(firebaseConfig)
 // console.log(firebaseApp);
 
-const db = firebaseApp
+const firebaseDB = firebaseApp
 
-export default db
+export default firebaseDB

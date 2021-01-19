@@ -2,13 +2,13 @@
   <div>
     <form class="form-signin" @submit.prevent="signin">
       <h1 class="h3 mb-3 font-weight-normal">登入</h1>
-      <label for="username" class="sr-only">username</label>
+      <label for="email" class="sr-only">email</label>
       <input
         type="text"
-        id="username"
+        id="email"
         class="form-control"
-        placeholder="Username"
-        v-model="user.username"
+        placeholder="email"
+        v-model="user.email"
         required
         autofocus
       />
@@ -37,31 +37,44 @@
 </template>
 
 <script>
+import firebaseDB from '@/firebase_connectDB.js'
+
 export default {
   name: 'Login',
   data() {
     return {
       user: {
-        username: '',
+        email: '',
         password: ''
       }
     }
   },
   methods: {
+    // signin() {
+    //   //  對應 config 裡的 dev.env.js 的環境變數
+    //   const api = `${process.env.VUE_APP_APIPATH}/user/login`
+    //   const vm = this
+    //   //console.log(process.env.APIPATH, process.env.CUSTOMPATH);
+    //   this.$http.post(api, vm.user).then(response => {
+    //     // console.log(response.data)
+    //     if (response.data.success) {
+    //       //vm.$router.push('/');
+    //       vm.$router.push('/admin') // 登入到指定頁面
+    //     } else {
+    //       vm.$router.push('/login')
+    //     }
+    //   })
+    // }
     signin() {
-      //  對應 config 裡的 dev.env.js 的環境變數
-      const api = `${process.env.VUE_APP_APIPATH}/user/login`
-      const vm = this
-      //console.log(process.env.APIPATH, process.env.CUSTOMPATH);
-      this.$http.post(api, vm.user).then(response => {
-        // console.log(response.data)
-        if (response.data.success) {
-          //vm.$router.push('/');
-          vm.$router.push('/admin') // 登入到指定頁面
-        } else {
-          vm.$router.push('/login')
-        }
-      })
+      firebaseDB.auth()
+      .signInWithEmailAndPassword(this.user.email, this.user.password)
+      .then(result => {
+        console.log(result)
+        this.$router.push('/admin')
+      }).catch(error => {
+        console.log(error.message)
+        // this.$router.push('/login')
+      });
     }
   }
 }

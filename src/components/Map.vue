@@ -292,7 +292,7 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png'
 import cityName from '../assets/CityCountyData.json'
 import $ from 'jquery'
 //
-import db from '@/firebase_connectDB.js'
+import firebaseDB from '@/firebase_connectDB.js'
 import Hamburger from '@/components/Hamburger.vue'
 import star from '../components/Star.vue'
 
@@ -705,19 +705,7 @@ export default {
     this.getToday()
     // this.fetchTWGeo()
     this.isLoading = true
-    const fStore = db.firestore()
-    // 用 axios 非同步取得資料
-    // const api = `${process.env.VUE_APP_APIPATH}/restaurants`
-    // this.$http.get(api).then(Response => {
-    //   // console.log(Response)
-    //   this.data = Response.data.data
-    //   // console.log(this.data)
-    //   // 找出類別集合
-    //   this.getUnique()
-    //   this.markerCluster()
-    //   this.isLoading = false
-    // })
-    this.data = []
+    const fStore = firebaseDB.firestore()
     fStore.collection('data').onSnapshot((res) => {
       // console.log(res.docChanges())
       const changes = res.docChanges()
