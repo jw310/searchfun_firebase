@@ -525,14 +525,14 @@
       </div>
     </div>
 
-    <!-- citysearch-->
+    <!-- citysearch -->
     <Pagination
       v-if="searchText === '' && select.city !== ''"
       :pageNum="pagination"
       @getPage="citySearch"
     ></Pagination>
 
-    <!--all -->
+    <!-- all -->
     <Pagination
       v-if="searchText === '' && select.city === ''"
       :pageNum="pagination"
@@ -605,16 +605,28 @@ export default {
       this.isLoading = false
       })
     },
-    getLocation(page = 1) {
-      // 用 axios 非同步取得資料
-      const api = `${process.env.VUE_APP_APIPATH}/restaurants/page?page=${page}`
-      this.$http.get(api).then(Response => {
-        // console.log(Response.data)
-        this.data = Response.data.data
-        this.pagination = Response.data.pagination
-        // console.log(this.data, this.pagination)
+    getLocation() {
+      let temp = []
+      const fStore = firebaseDB.firestore()
+      // this.pagination = Response.data.pagination // 分頁資訊
+      fStore.collection('data').where("score","==",4.5).get().then( querySnapshot => {
+        // console.log(querySnapshot.size)
+        querySnapshot.docChanges().forEach((element) => {
+          if (element.type === 'added') {
+            temp.push({
+              ...element.doc.data(),
+              id: element.doc.id,
+            })
+          }
+        })
+        console.log(temp, temp.length)
+      })
+      .catch(err => {
+        console.log('Error getting documents', err)
       })
     },
+    // getLocation(page = 1) {
+    // },
     openModal(isNew, item) {
       // jq('#locationModal').modal('show')
       // 如果是全新資料先加入 geometry 欄位
@@ -627,7 +639,7 @@ export default {
         }
         this.isNew = true
       } else {
-        // 如果直接 this.tempLocation = item，會有傳參考的特性，用 ES6 方法 Object.assign()
+        // 直接 this.tempLocation = item，有傳參考的特性，用 Object.assign() 複製處理 非 deep copy(只有一層)
         this.tempLocation = Object.assign({}, item)
         // console.log(this.tempLocation)
         this.updateId = this.tempLocation.id
@@ -716,13 +728,26 @@ export default {
         console.log(error.message)
       });
     },
-    citySearch(page = 1) {
-      const api = `${process.env.VUE_APP_APIPATH}/restaurants/page?page=${page}&&city=${this.select.city}`
-      this.$http.get(api).then(Response => {
-        console.log(Response.data)
-        this.data = Response.data.data
-        this.pagination = Response.data.pagination
-        // console.log(this.data, this.pagination)
+    citySearch() {
+      this.isLoading = true
+      const fStore = firebaseDB.firestore()
+      fStore.collection('data').where("county","==",this.select.city).get().then( querySnapshot => {
+        this.data = []
+        querySnapshot.docChanges().forEach((element) => {
+          if (element.type === 'added') {
+            this.data.push({
+              ...element.doc.data(),
+              id: element.doc.id,
+            })
+          }
+        })
+        if (this.select.city === '') {
+          this.getAllLocation()
+        }
+        this.isLoading = false
+      })
+      .catch(err => {
+        console.log('Error getting documents', err)
       })
     },
     search() {

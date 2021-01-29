@@ -1,7 +1,7 @@
 import firebase from 'firebase/app'
 // 資料庫
 import 'firebase/firestore'
-// 驗證，使用方式是 db.auth
+// firebase 驗證，使用方式是 firebaseDB.auth
 import 'firebase/auth'
 import 'firebase/firebase-auth'
 // import 'firebase/database'

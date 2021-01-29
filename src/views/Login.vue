@@ -21,11 +21,11 @@
         v-model="user.password"
         required
       />
-      <div class="checkbox mb-3">
+      <!-- <div class="checkbox mb-3">
         <label>
           <input type="checkbox" value="remember-me" /> Remember me
         </label>
-      </div>
+      </div> -->
       <button class="btn btn-lg btn-primary btn-block" type="submit">送出</button>
       <p class="mt-3 text-muted">若尚未註冊，請先完成註冊手續</p>
       <router-link class="admin" to="/signup">
@@ -50,21 +50,6 @@ export default {
     }
   },
   methods: {
-    // signin() {
-    //   //  對應 config 裡的 dev.env.js 的環境變數
-    //   const api = `${process.env.VUE_APP_APIPATH}/user/login`
-    //   const vm = this
-    //   //console.log(process.env.APIPATH, process.env.CUSTOMPATH);
-    //   this.$http.post(api, vm.user).then(response => {
-    //     // console.log(response.data)
-    //     if (response.data.success) {
-    //       //vm.$router.push('/');
-    //       vm.$router.push('/admin') // 登入到指定頁面
-    //     } else {
-    //       vm.$router.push('/login')
-    //     }
-    //   })
-    // }
     signin() {
       firebaseDB.auth()
       .signInWithEmailAndPassword(this.user.email, this.user.password)

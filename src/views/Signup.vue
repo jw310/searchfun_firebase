@@ -73,10 +73,10 @@ export default {
       firebaseDB.auth()
       .createUserWithEmailAndPassword(this.user.email, this.user.password)
       .then(result => {
-        // console.log(result)
+        console.log(result)
         this.$router.push('/')
       }).catch(function(error) {
-        // console.log(error.message)
+        console.log(error.message)
       });
     }
   },

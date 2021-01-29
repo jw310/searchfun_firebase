@@ -15,19 +15,6 @@ export default {
     }
   },
   methods: {
-    // signout() {
-    //   //  對應 config 裡的 dev.env.js 的環境變數
-    //   const api = `${process.env.VUE_APP_APIPATH}/user/logout`
-    //   console.log(api)
-    //   // 申請apipath
-    //   const vm = this
-    //   this.$http.get(api).then(response => {
-    //     console.log(response.data)
-    //     if (response.data.success) {
-    //       vm.$router.push('/login') // 登入回到首頁
-    //     }
-    //   })
-    // }
     signout() {
       firebaseDB.auth()
       .signOut()
