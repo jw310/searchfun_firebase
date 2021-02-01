@@ -110,6 +110,8 @@
                   target="_blank"
                 >{{item.name}}</a>
               </h3>
+              <button v-if="item.isFavorites === false" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
+              <button v-if="item.isFavorites === true" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
               <star :score="item.score" />
               <p class="mb-0">類型：{{ item.category }}</p>
               <p class="mb-0">推薦：{{ item.recommended }}</p>
@@ -142,6 +144,8 @@
                   target="_blank"
                 >{{item.name}}</a>
               </h3>
+              <button v-if="item.isFavorites === false" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
+              <button v-if="item.isFavorites === true" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
               <star :score="item.score" />
               <p class="mb-0">推薦：{{ item.recommended }}</p>
               <p class="mb-0">備註：{{ item.description}}</p>
@@ -168,7 +172,7 @@
               :key="key"
               v-if="item.county === select.city
                 && item.town === select.area && searchText === ''"
-              @click="panTo(item);loveBtnActive(item)"
+              @click="panTo(item)"
             >
               <div class="d-flex justify-content-between">
                 <h3>
@@ -177,12 +181,8 @@
                     target="_blank"
                   >{{item.name}}</a>
                 </h3>
-                <div v-if="isLoved">
-                  <i class="loved fas fa-heart"></i>
-                </div>
-                <div v-else>
-                  <i class="love far fa-heart"></i>
-                </div>
+                <button v-if="item.isFavorites === false" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
+                <button v-if="item.isFavorites === true" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
               </div>
               <star :score="item.score" />
               <p class="mb-0">類型：{{ item.category }}</p>
@@ -219,7 +219,7 @@
       </li>
     </ul>
 
-    <!--彈跳視窗訊息-->
+    <!--提醒事項彈跳視窗訊息-->
     <div
       class="modal fade"
       id="infoModal"
@@ -254,14 +254,61 @@
                   <p class="mb-1 mr-2">
                     <i class="fas fa-info-circle"></i>
                   </p>
-                  <p class="mb-1">若有需告知事項，可來信通知。</p>
+                  <p class="mb-1">備註。</p>
                 </div>
               </li>
             </ul>
             <hr />
             <div>
-              <img src="https://i.picsum.photos/id/1005/5760/3840.jpg" alt />
+              <img src="https://picsum.photos/id/1005/5760/3840.jpg" alt />
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+        <!--收藏清單彈跳視窗訊息-->
+    <div
+      class="modal fade"
+      id="favoritesModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="favoritesModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title font-weight-bold" id="favoritesModalLabel">收藏</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <template v-for="(item, key) in favoritesData">
+            <a
+              class="list-group-item text-left"
+              :key="key"
+              @click="panTo(item);"
+            >
+              <h3>
+                <a
+                  :href="`https://www.google.com.tw/search?q=${item.name}`"
+                  target="_blank"
+                >{{item.name}}</a>
+              </h3>
+              <star :score="item.score" />
+              <p class="mb-0">類型：{{ item.category }}</p>
+              <p class="mb-0">
+                地址：
+                <a
+                  :href="`https://www.google.com.tw/maps/place/${item.address}`"
+                  target="_blank"
+                  title="Google Map"
+                >{{ item.address }}</a>
+              </p>
+            </a>
+          </template>
           </div>
         </div>
       </div>
@@ -316,6 +363,7 @@ export default {
     filterData: [],
     categories: [],
     categoriesFilterData: [],
+    favoritesData: [],
     // 存放目前是否已獲得座標的狀態
     hasGeo: false,
     // 定位資訊
@@ -363,9 +411,25 @@ export default {
     }),
     isLoading: false,
     score: 0,
-    isLoved: false
+    // isLoved: false
   }),
   methods: {
+    getFavoritesData() {
+      this.favoritesData = [] // 清空之前資料
+      const fStore = firebaseDB.firestore()
+      fStore.collection('data').where("isFavorites","==", true).get().then( querySnapshot => {
+        querySnapshot.docChanges().forEach((element) => {
+            this.favoritesData.push({
+              ...element.doc.data(),
+              id: element.doc.id,
+            })
+        })
+        // console.log(this.favoritesData)
+      })
+      .catch(err => {
+        console.log('Error getting documents', err)
+      })
+    },
     // 分類功能
     getUnique() {
       const vm = this
@@ -539,7 +603,9 @@ export default {
       let todayStr = `今天是 <span class="font-weight-bold">${today.getFullYear()} 年 ${today.getMonth() +
         1} 月 ${today.getDate()} 日 <br> ${days.find(
         (day, index) => index === today.getDay()
-      )} </span><span class="font-weight-bold">${h}:${m}:${s}</span><br><i id="detail-info" class="fas fa-info-circle" data-toggle="modal" data-target="#infoModal"></i>提醒事項`
+      )} </span><span class="font-weight-bold">${h}:${m}:${s}</span><br><i id="detail-info" class="fas fa-info-circle" data-toggle="modal" data-target="#infoModal"></i>提醒事項
+      <button class="btn btn-sm btn-danger" data-toggle="modal"
+      data-target="#favoritesModal">收藏清單</button>`
       document.getElementById('date').innerHTML = todayStr
     },
     // 計算大約路程距離
@@ -557,9 +623,17 @@ export default {
       L.polyline(latlngs).addTo(this.osmMap)
       alert(`到 ${item.name} 的直線距離約為 ${distance.toFixed(2)} 公里`)
     },
-    loveBtnActive(item) {
+    async loveBtnActive(item) {
       // console.log(item)
-      console.log(Boolean(item.food))
+      if (item.isFavorites === false) {
+        item.isFavorites = true
+      } else {
+        item.isFavorites = false
+      }
+      let tempObj = { isFavorites: item.isFavorites }
+      const fStore = firebaseDB.firestore()
+      await fStore.collection('data').doc(item.id).update(tempObj)
+      this.getFavoritesData()
     },
     // 定位目前位置
     geolocate() {
@@ -586,42 +660,6 @@ export default {
         console.log('抱歉，您的裝置不支援定位功能。')
       }
     },
-    // geolocate() {
-    // 取得使用者目前的位置 navigator.geolocation 物件的 getCurrentPosition() 方法
-    // if (navigator.geolocation) {
-    //   // alert('/* 地理位置服務可用 */')
-    //   navigator.geolocation.getCurrentPosition(position => {
-    //     // console.log(position.coords.latitude, position.coords.longitude);
-    //     this.location[0] = position.coords.latitude
-    //     this.location[1] = position.coords.longitude
-    //     L.marker([position.coords.latitude, position.coords.longitude], {
-    //       // icon: userIcon
-    //     }).addTo(this.osmMap)
-    //     // this.center = this.location
-    //     // watch 則是持續監聽使用者的位置 setView 可以設定地圖座標
-    //     this.osmMap
-    //       .locate({
-    //         setView: true,
-    //         watch: true,
-    //         maxZoom: 16
-    //       })
-    //       // 觸發執行 onLocationFound()
-    //       .on('locationfound', onLocationFound)
-    //     function onLocationFound(e) {
-    //       console.log(e)
-    //       // let myLocation = e.latlng
-    //       // // let bookstore = L.latLng(25.0088883, 121.4588675)
-    //       // // // 取得兩點間距離(米)
-    //       // // console.log(myLocation.distanceTo(bookstore))
-    //       // L.marker(myLocation, {
-    //       //   icon: userIcon
-    //       // })
-    //     }
-    //   })
-    // } else {
-    //   alert('未允許或定位錯誤, 將定位導到台北101')
-    // }
-    // },
     // 加上縣市邊界
     fetchTWGeo() {
       // // tw-county.geojson 要放在 public 資料夾下，用 fetch 會是公開資料
@@ -703,6 +741,7 @@ export default {
   // 取得 API 資料
   mounted() {
     this.getToday()
+    this.getFavoritesData()
     // this.fetchTWGeo()
     this.isLoading = true
     const fStore = firebaseDB.firestore()
@@ -712,7 +751,7 @@ export default {
       changes.forEach((element) => {
         if (element.type === 'added') {
           // 取得資料欄位內容
-          console.log(element.doc.data())
+          // console.log(element.doc.data())
           this.data.push({
             ...element.doc.data(),
             id: element.doc.id,

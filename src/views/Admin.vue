@@ -526,11 +526,11 @@
     </div>
 
     <!-- citysearch -->
-    <Pagination
+    <!-- <Pagination
       v-if="searchText === '' && select.city !== ''"
       :pageNum="pagination"
       @getPage="citySearch"
-    ></Pagination>
+    ></Pagination> -->
 
     <!-- all -->
     <Pagination
@@ -586,10 +586,10 @@ export default {
     isLoading: false
   }),
   methods: {
-    getAllLocation() {
+    async getAllLocation() {
       this.isLoading = true
       const fStore = firebaseDB.firestore()
-      fStore.collection('data').onSnapshot((res) => {
+      await fStore.collection('data').onSnapshot((res) => {
       // console.log(res.docChanges())
       const changes = res.docChanges()
       changes.forEach((element) => {
@@ -605,28 +605,38 @@ export default {
       this.isLoading = false
       })
     },
-    getLocation() {
-      let temp = []
+    getLocation(page = 1) {
+      let limit = 3
+      let pageIndex = limit * page
       const fStore = firebaseDB.firestore()
-      // this.pagination = Response.data.pagination // 分頁資訊
-      fStore.collection('data').where("score","==",4.5).get().then( querySnapshot => {
-        // console.log(querySnapshot.size)
-        querySnapshot.docChanges().forEach((element) => {
-          if (element.type === 'added') {
-            temp.push({
+      fStore.collection('data').get().then( querySnapshot => {
+        let totalPage = Math.ceil(querySnapshot.size / limit)
+        if (pageIndex > querySnapshot.size) {
+          pageIndex = querySnapshot.size
+        }
+        let cursor = querySnapshot.docs[querySnapshot.size - (pageIndex)]
+        // console.log(cursor)
+        fStore.collection('data').startAt(cursor).limit(limit).get().then(querySnapshot => {
+          this.data = []
+          querySnapshot.docChanges().forEach((element) => {
+            this.data.push({
               ...element.doc.data(),
               id: element.doc.id,
             })
-          }
+          })
         })
-        console.log(temp, temp.length)
+        this.pagination = {
+            total_pages: totalPage,
+            current_page: page,
+            has_pre: false,
+            has_next: false,
+            category: null
+        }
       })
       .catch(err => {
         console.log('Error getting documents', err)
       })
     },
-    // getLocation(page = 1) {
-    // },
     openModal(isNew, item) {
       // jq('#locationModal').modal('show')
       // 如果是全新資料先加入 geometry 欄位
@@ -734,15 +744,13 @@ export default {
       fStore.collection('data').where("county","==",this.select.city).get().then( querySnapshot => {
         this.data = []
         querySnapshot.docChanges().forEach((element) => {
-          if (element.type === 'added') {
-            this.data.push({
-              ...element.doc.data(),
-              id: element.doc.id,
-            })
-          }
+          this.data.push({
+            ...element.doc.data(),
+            id: element.doc.id,
+          })
         })
         if (this.select.city === '') {
-          this.getAllLocation()
+          this.getLocation()
         }
         this.isLoading = false
       })
@@ -761,7 +769,7 @@ export default {
     }
   },
   mounted() {
-    this.getAllLocation()
+    // this.getAllLocation()
     this.getLocation()
   }
 }
