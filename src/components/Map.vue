@@ -104,14 +104,16 @@
               v-if=" searchText != ''"
               @click="panTo(item);"
             >
-              <h3>
-                <a
-                  :href="`https://www.google.com.tw/search?q=${item.name}`"
-                  target="_blank"
-                >{{item.name}}</a>
-              </h3>
-              <button v-if="item.isFavorites === false" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
-              <button v-if="item.isFavorites === true" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
+              <div class="d-flex justify-content-between">
+                <h3>
+                  <a
+                    :href="`https://www.google.com.tw/search?q=${item.name}`"
+                    target="_blank"
+                  >{{item.name}}</a>
+                </h3>
+                <button v-show="!item.isFavorites" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
+                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
+              </div>
               <star :score="item.score" />
               <p class="mb-0">類型：{{ item.category }}</p>
               <p class="mb-0">推薦：{{ item.recommended }}</p>
@@ -138,14 +140,16 @@
               v-if=" searchText === ''"
               @click="panTo(item);"
             >
-              <h3>
-                <a
-                  :href="`https://www.google.com.tw/search?q=${item.name}`"
-                  target="_blank"
-                >{{item.name}}</a>
-              </h3>
-              <button v-if="item.isFavorites === false" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
-              <button v-if="item.isFavorites === true" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
+              <div class="d-flex justify-content-between">
+                <h3>
+                  <a
+                    :href="`https://www.google.com.tw/search?q=${item.name}`"
+                    target="_blank"
+                  >{{item.name}}</a>
+                </h3>
+                <button v-show="!item.isFavorites" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
+                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
+              </div>
               <star :score="item.score" />
               <p class="mb-0">推薦：{{ item.recommended }}</p>
               <p class="mb-0">備註：{{ item.description}}</p>
@@ -181,8 +185,8 @@
                     target="_blank"
                   >{{item.name}}</a>
                 </h3>
-                <button v-if="item.isFavorites === false" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
-                <button v-if="item.isFavorites === true" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
+                <button v-show="!item.isFavorites" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
+                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
               </div>
               <star :score="item.score" />
               <p class="mb-0">類型：{{ item.category }}</p>
@@ -291,12 +295,15 @@
               :key="key"
               @click="panTo(item);"
             >
-              <h3>
-                <a
-                  :href="`https://www.google.com.tw/search?q=${item.name}`"
-                  target="_blank"
-                >{{item.name}}</a>
-              </h3>
+              <div class="d-flex justify-content-between">
+                <h3>
+                  <a
+                    :href="`https://www.google.com.tw/search?q=${item.name}`"
+                    target="_blank"
+                  >{{item.name}}</a>
+                </h3>
+                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
+              </div>
               <star :score="item.score" />
               <p class="mb-0">類型：{{ item.category }}</p>
               <p class="mb-0">
