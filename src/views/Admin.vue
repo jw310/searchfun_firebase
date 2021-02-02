@@ -606,17 +606,19 @@ export default {
       })
     },
     getLocation(page = 1) {
-      let limit = 3
-      let pageIndex = limit * page
+      let perpage = 3 // 每頁資料量
+      let pageIndex = page * perpage
       const fStore = firebaseDB.firestore()
       fStore.collection('data').get().then( querySnapshot => {
-        let totalPage = Math.ceil(querySnapshot.size / limit)
+        let totalPage = Math.ceil(querySnapshot.size / perpage)
         if (pageIndex > querySnapshot.size) {
           pageIndex = querySnapshot.size
+          perpage = perpage - 1
         }
-        let cursor = querySnapshot.docs[querySnapshot.size - (pageIndex)]
-        // console.log(cursor)
-        fStore.collection('data').startAt(cursor).limit(limit).get().then(querySnapshot => {
+        let minCursor = querySnapshot.docs[pageIndex - perpage]
+        let maxCursor = querySnapshot.docs[pageIndex - 1]
+        // console.log(minCursor, maxCursor)
+        fStore.collection('data').startAt(minCursor).endAt(maxCursor).get().then(querySnapshot => {
           this.data = []
           querySnapshot.docChanges().forEach((element) => {
             this.data.push({

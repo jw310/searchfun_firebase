@@ -111,8 +111,8 @@
                     target="_blank"
                   >{{item.name}}</a>
                 </h3>
-                <button v-show="!item.isFavorites" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
-                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
+                <button v-show="!item.isFavorites" id="loved-btn" class="btn btn-sm btn-outline-success mb-2" @click="loveBtnActive(item)">收藏</button>
+                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-success mb-2" @click="loveBtnActive(item)">已收藏</button>
               </div>
               <star :score="item.score" />
               <p class="mb-0">類型：{{ item.category }}</p>
@@ -147,8 +147,8 @@
                     target="_blank"
                   >{{item.name}}</a>
                 </h3>
-                <button v-show="!item.isFavorites" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
-                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
+                <button v-show="!item.isFavorites" id="loved-btn" class="btn btn-sm btn-outline-success mb-2" @click="loveBtnActive(item)">收藏</button>
+                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-success mb-2" @click="loveBtnActive(item)">已收藏</button>
               </div>
               <star :score="item.score" />
               <p class="mb-0">推薦：{{ item.recommended }}</p>
@@ -185,8 +185,8 @@
                     target="_blank"
                   >{{item.name}}</a>
                 </h3>
-                <button v-show="!item.isFavorites" id="loved-btn" class="btn btn-sm btn-outline-danger mb-2" @click="loveBtnActive(item)">收藏</button>
-                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
+                <button v-show="!item.isFavorites" id="loved-btn" class="btn btn-sm btn-outline-success mb-2" @click="loveBtnActive(item)">收藏</button>
+                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-success mb-2" @click="loveBtnActive(item)">已收藏</button>
               </div>
               <star :score="item.score" />
               <p class="mb-0">類型：{{ item.category }}</p>
@@ -302,7 +302,7 @@
                     target="_blank"
                   >{{item.name}}</a>
                 </h3>
-                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-danger mb-2" @click="loveBtnActive(item)">已收藏</button>
+                <button v-show="item.isFavorites" id="loved-btn" class="btn btn-sm btn-success mb-2" @click="loveBtnActive(item)">已收藏</button>
               </div>
               <star :score="item.score" />
               <p class="mb-0">類型：{{ item.category }}</p>
@@ -611,7 +611,7 @@ export default {
         1} 月 ${today.getDate()} 日 <br> ${days.find(
         (day, index) => index === today.getDay()
       )} </span><span class="font-weight-bold">${h}:${m}:${s}</span><br><i id="detail-info" class="fas fa-info-circle" data-toggle="modal" data-target="#infoModal"></i>提醒事項
-      <button class="btn btn-sm btn-danger" data-toggle="modal"
+      <button class="btn btn-sm btn-success" data-toggle="modal"
       data-target="#favoritesModal">收藏清單</button>`
       document.getElementById('date').innerHTML = todayStr
     },

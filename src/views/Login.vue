@@ -54,6 +54,7 @@ export default {
       firebaseDB.auth()
       .signInWithEmailAndPassword(this.user.email, this.user.password)
       .then(result => {
+        // let user = firebaseDB.auth().currentUser;
         console.log(result)
         this.$router.push('/admin')
       }).catch(error => {
