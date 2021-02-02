@@ -43,6 +43,7 @@
         type="password"
         class="form-control mt-4"
         placeholder="請確認密碼"
+        v-model="user.repassword"
         required
       />
       <button id="btnSub" class="btn btn-lg btn-primary mt-4 mb-1" type="submit">註冊</button>
@@ -70,16 +71,31 @@ export default {
   methods: {
     signup() {
       // console.log(firebaseDB)
-      firebaseDB.auth()
-      .createUserWithEmailAndPassword(this.user.email, this.user.password)
-      .then(result => {
-        console.log(result)
-        this.$router.push('/')
-      }).catch(function(error) {
-        console.log(error.message)
-      });
+    if (this.user.password === this.user.repassword) {
+        firebaseDB.auth()
+        .createUserWithEmailAndPassword(this.user.email, this.user.password)
+        .then(result => {
+          console.log(result)
+          this.$router.push('/')
+          firebaseDB.auth().languageCode = 'zh-TW' // 修改信件語言
+          let user = firebaseDB.auth().currentUser // 取得使用者資料
+            user
+            .sendEmailVerification()
+            .then(function() {
+              // 驗證信發送完成
+              window.alert('驗證信已發送到您的信箱，請查收。')
+            }).catch(error => {
+              // 驗證信發送失敗
+              console.log(error.message);
+            });
+        }).catch(function(error) {
+          console.log(error.message)
+        });
+      } else {
+        window.alert('密碼確認錯誤')
+      }
     }
-  },
+  }
 }
 </script>
 

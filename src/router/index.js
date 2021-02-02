@@ -61,7 +61,7 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   // console.log('to:', to, 'from:', from, 'next:', next);
   if (to.meta.requiresAuth) { // 需要驗證
-    firebaseDB.auth().onAuthStateChanged(function (user) {
+    firebaseDB.auth().onAuthStateChanged(function (user) { // 取得使用者資訊(使用觀察者(onAuthStateChanged)來跟踪用戶的登錄狀態)
       if (user) { //使用者已登入，可以取得資料
         // let email = user.email;
         // let uid = user.uid;
